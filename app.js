@@ -61,19 +61,24 @@ var sockjs_opts = {sockjs_url: "http://cdn.sockjs.org/sockjs-0.3.min.js"};
 var echo = sockjs.createServer(sockjs_opts);
 
 echo.on('connection', function(conn) {
-	console.log('connection' + conn);
+	console.log('\nOpen connection' + conn);
     console.log('New Dude joined: ' + conn.id);
+	conn.write("\nServer says Hi");
 
     conn.on('data', function(message) {
-        console.log('Dude sent message ' + conn, message);
+        console.log('\nDude sent message ' + conn, message);
     });
 	
 	conn.on('close', function() {
-		console.log('Dude left: ' + conn.id);
-        console.log('close ' + conn);
+		console.log('\nDude left: ' + conn.id);
+        console.log('Close connection' + conn);
     });
 });
 
-echo.installHandlers(app, {prefix:'/echo'});
+var server = app.listen(3000, function() {
+    console.log('Listening on port %d', server.address().port);
+});
+
+echo.installHandlers(server, {prefix:'/echo'});
 
 module.exports = app;
