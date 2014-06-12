@@ -57,32 +57,34 @@ app.use(function(err, req, res, next) {
 });
 
 var echo = sockjs.createServer();
-var connections = [];
+var currentConnections = [];
 
 echo.on('connection', function(conn) {
-    console.log('\n<' + conn.id + '>' + ' JOINED');
-	connections.push(conn);
+    console.log('\n[' + conn.id + ']' + ' JOINED');
+	currentConnections.push(conn);
 	
 	//show a welcoming message only to this specific client
-	conn.write('[SERVER WHISPER TO YOU] :' + 'Hello ' + '\n<' + conn.id + '>' + '. Welcome!');
+	conn.write('[SERVER WHISPER TO YOU] :' + 'Hello ' + '[' + conn.id + ']' + '. Welcome!');
 
     conn.on('data', function(message) {
-        console.log('\n<' + conn.id + '>' + ' sent message : ' + message);
-        broadcast('[SERVER BROADCAST TO ALL] : ' + '\n<' + conn.id + '>' + ' sent message : ' + message);
+        console.log('\n[' + conn.id + ']' + ' sent message : ' + message);
+        broadcast('[SERVER BROADCAST TO ALL] : ' + '[' + conn.id + ']' + ' sent message : ' + '<b>' + message + '</b>');
     });
 	
 	conn.on('close', function() {
-    console.log('\n<' + conn.id + '>' + ' LEFT');
-	removeFromArray(connections, conn);
+		console.log('\n[' + conn.id + ']' + ' LEFT');
+		
+		// remove the closed connection from the list
+		removeFromArray(currentConnections, conn);
     });
 });
 
 function broadcast(message){
   // iterate through each client in clients object
     // write the message to all connected clients
-    for (var i=0; i<connections.length; i++) {
-      connections[i].write(message);
-	  console.log('Broadcasting to ' + connections[i].id);
+    for (var i=0; i<currentConnections.length; i++) {
+      currentConnections[i].write(message);
+	  console.log('Broadcasting to ' + currentConnections[i].id);
     }
 }
 
