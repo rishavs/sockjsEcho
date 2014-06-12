@@ -56,24 +56,42 @@ app.use(function(err, req, res, next) {
     });
 });
 
-
-var sockjs_opts = {sockjs_url: "http://cdn.sockjs.org/sockjs-0.3.min.js"};
-var echo = sockjs.createServer(sockjs_opts);
+var echo = sockjs.createServer();
+var connections = [];
 
 echo.on('connection', function(conn) {
-	console.log('\nOpen connection' + conn);
-    console.log('New Dude joined: ' + conn.id);
-	conn.write("\nServer says Hi");
+    console.log('\n<' + conn.id + '>' + ' JOINED');
+	connections.push(conn);
+	
+	//show a welcoming message only to this specific client
+	conn.write('[SERVER WHISPER TO YOU] :' + 'Hello ' + '\n<' + conn.id + '>' + '. Welcome!');
 
     conn.on('data', function(message) {
-        console.log('\nDude sent message ' + conn, message);
+        console.log('\n<' + conn.id + '>' + ' sent message : ' + message);
+        broadcast('[SERVER BROADCAST TO ALL] : ' + '\n<' + conn.id + '>' + ' sent message : ' + message);
     });
 	
 	conn.on('close', function() {
-		console.log('\nDude left: ' + conn.id);
-        console.log('Close connection' + conn);
+    console.log('\n<' + conn.id + '>' + ' LEFT');
+	removeFromArray(connections, conn);
     });
 });
+
+function broadcast(message){
+  // iterate through each client in clients object
+    // write the message to all connected clients
+    for (var i=0; i<connections.length; i++) {
+      connections[i].write(message);
+	  console.log('Broadcasting to ' + connections[i].id);
+    }
+}
+
+function removeFromArray (array, element ) {
+	// I seriously have to write this? wow... how bass-ackwards is this lang?
+	while (array.indexOf(element) !== -1) {
+		array.splice(array.indexOf(element), 1);
+	}
+}
 
 var server = app.listen(3000, function() {
     console.log('Listening on port %d', server.address().port);
