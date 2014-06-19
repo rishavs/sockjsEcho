@@ -67,6 +67,7 @@ echo.on('connection', function(conn) {
     if (currentConnections.length >=3) {
         //if the connection numbers is less than the number of max connections, show a welcoming message only to this specific client
         conn.write('[SERVER WHISPERED TO YOU] :' + 'Sorry ' + '[' + conn.id + ']' + '. Only 2 connections are allowed!');
+        console.log('\n Max Connection (' + currentConnections.length + ') Reached!');
         
         //remove the connection and disconnect the client
         removeFromArray(currentConnections, conn);
