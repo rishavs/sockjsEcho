@@ -27,6 +27,10 @@ function sendScissors () {
 	sock.send("Scissors");
 }
 
+function closeConnection () {
+	sock.end();
+}
+
 function addText(text) {
 	// Append the text to text area (using jQuery)
 	$('#wallOfText').append('<p>' + text + '</p>');

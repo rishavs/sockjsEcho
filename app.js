@@ -7,9 +7,10 @@ var bodyParser = require('body-parser');
 var sockjs  = require('sockjs');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 
 var app = express();
+
+var maxConnections = 2; 
 
  // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -23,7 +24,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -62,13 +62,24 @@ var currentConnections = [];
 echo.on('connection', function(conn) {
     console.log('\n[' + conn.id + ']' + ' JOINED');
 	currentConnections.push(conn);
-	
-	//show a welcoming message only to this specific client
-	conn.write('[SERVER WHISPER TO YOU] :' + 'Hello ' + '[' + conn.id + ']' + '. Welcome!');
+    
+    // check for number of connections
+    if (currentConnections.length >=3) {
+        //if the connection numbers is less than the number of max connections, show a welcoming message only to this specific client
+        conn.write('[SERVER WHISPERED TO YOU] :' + 'Sorry ' + '[' + conn.id + ']' + '. Only 2 connections are allowed!');
+        
+        //remove the connection and disconnect the client
+        removeFromArray(currentConnections, conn);
+        conn.end();
+        }
+    else {
+    //if the connection numbers is less than the number of max connections, show a welcoming message only to this specific client
+        conn.write('[SERVER WHISPER TO YOU] :' + 'Hello ' + '[' + conn.id + ']' + '. Welcome!');
+    }
 
     conn.on('data', function(message) {
         console.log('\n[' + conn.id + ']' + ' sent message : ' + message);
-        broadcast('[SERVER BROADCAST TO ALL] : ' + '[' + conn.id + ']' + ' sent message : ' + '<b>' + message + '</b>');
+        broadcast('[SERVER BROADCASTED TO ALL] : ' + '[' + conn.id + ']' + ' sent message : ' + '<b>' + message + '</b>');
     });
 	
 	conn.on('close', function() {
