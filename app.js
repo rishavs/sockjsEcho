@@ -60,21 +60,25 @@ var echo = sockjs.createServer();
 var currentConnections = [];
 
 echo.on('connection', function(conn) {
-    console.log('\n[' + conn.id + ']' + ' JOINED');
+
 	currentConnections.push(conn);
+    var numConnections = currentConnections.length;
+    
+    console.log('\n[' + conn.id + ']' + ' JOINED');
+    console.log('\nNumber of Connections = ' + numConnections);
     
     // check for number of connections
-    if (currentConnections.length >=3) {
+    if (numConnections >=3) {
         //if the connection numbers is less than the number of max connections, show a welcoming message only to this specific client
         conn.write('[SERVER WHISPERED TO YOU] :' + 'Sorry ' + '[' + conn.id + ']' + '. Only 2 connections are allowed!');
-        console.log('\n Max Connection (' + currentConnections.length + ') Reached!');
+        console.log('\n Max Connection Reached!');
         
-        //remove the connection and disconnect the client
-        removeFromArray(currentConnections, conn);
+        //disconnect the client
         conn.end();
         }
     else {
     //if the connection numbers is less than the number of max connections, show a welcoming message only to this specific client
+        broadcast('[SERVER BROADCASTED TO ALL] : ' + '[' + conn.id + ']' + ' JOINED');
         conn.write('[SERVER WHISPER TO YOU] :' + 'Hello ' + '[' + conn.id + ']' + '. Welcome!');
     }
 
@@ -85,9 +89,10 @@ echo.on('connection', function(conn) {
 	
 	conn.on('close', function() {
 		console.log('\n[' + conn.id + ']' + ' LEFT');
-		
+        broadcast('[SERVER BROADCASTED TO ALL] : ' + '[' + conn.id + ']' + ' LEFT');
 		// remove the closed connection from the list
 		removeFromArray(currentConnections, conn);
+        console.log('\nNumber of Connections = ' + currentConnections.length);
     });
 });
 
