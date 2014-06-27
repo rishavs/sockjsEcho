@@ -1,34 +1,55 @@
-var sock = new SockJS('/echo');
-
-sock.onopen = function() {
-	addText("You have JOINED the session");
-};
-sock.onmessage = function(e) {
-	console.log('message', e.data);
-
-	// Append the text to text area 
-	addText(e.data);
-};
-sock.onclose = function() {
-	addText("You have LEFT the session");
-};
-
-sock.send("Dude joined and stuff...");
+var sock;
 
 function sendRock () {
-	sock.send("Rock");
+    var clientMsg = {};
+    clientMsg.type = 'event';
+    clientMsg.content = 'Rock';
+    
+	sock.send(JSON.stringify(clientMsg));
 }
 
 function sendPaper () {
-	sock.send("Paper");
+    var clientMsg = {};
+    clientMsg.type = 'event';
+    clientMsg.content = 'Paper';
+    
+	sock.send(JSON.stringify(clientMsg));
 }
 
-function sendScissors () {
-	sock.send("Scissors");
+function sendScissor () {
+    var clientMsg = {};
+    clientMsg.type = 'event';
+    clientMsg.content = 'Scissor';
+    
+	sock.send(JSON.stringify(clientMsg));
+}
+
+function newConnection () {
+    // incase connection already open, close it. this ensures that spamming the button doesnt creates more connections
+    if(typeof sock === 'object' && (sock.readyState === 0||sock.readyState === 1)){
+        closeConnection ();
+    };
+	sock = new SockJS('/echo');
+
+    sock.onopen = function() {
+        addText("You have JOINED the session");
+    };
+
+    sock.onmessage = function(msg) {
+        var serverMsg = JSON.parse(msg.data);
+
+        // Append the text to text area 
+        addText(serverMsg.content);
+    };
+
+    sock.onclose = function() {
+        addText("You have LEFT the session");
+    };
+
 }
 
 function closeConnection () {
-	sock.end();
+	sock.close();
 }
 
 function addText(text) {
